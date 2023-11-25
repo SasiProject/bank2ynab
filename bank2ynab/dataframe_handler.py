@@ -2,7 +2,6 @@ import logging
 
 import pandas as pd
 
-
 class DataframeHandler:
     # TODO - integrate payee mapping in this class
 
@@ -138,7 +137,6 @@ def read_csv(
 
     return df
 
-
 def parse_data(
     *,
     df: pd.DataFrame,
@@ -177,6 +175,7 @@ def parse_data(
     df.columns = input_columns
     # debug to see what our df is like before transformation
     logging.debug(f"\nInitial DF\n{df.head()}")
+
     # merge duplicate input columns
     merge_duplicate_columns(df, input_columns)
     # add missing columns
@@ -196,7 +195,7 @@ def parse_data(
     # auto fill payee from memo
     df = auto_payee(df)
     # fix strings
-    df["Payee"] = clean_strings(df["Payee"])
+    #df["Payee"] = clean_strings(df["Payee"])
     df["Memo"] = clean_strings(df["Memo"])
     # remove invalid rows
     df = remove_invalid_rows(df)
@@ -298,6 +297,7 @@ def cd_flag_process(df: pd.DataFrame, cd_flags: list[str]) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     if len(cd_flags) == 3:
+        df["CDFlag"].fillna('', inplace=True)
         outflow_flag = cd_flags[2]
         # if this row is indicated to be outflow, make inflow negative
         df.loc[df["CDFlag"] == outflow_flag, ["Inflow"]] = -1 * df["Inflow"]
@@ -395,6 +395,7 @@ def auto_memo(df: pd.DataFrame, fill_memo: bool) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     if fill_memo:
+        df["Memo"] = None
         df["Memo"].fillna(df["Payee"], inplace=True)
     return df
 
@@ -422,6 +423,7 @@ def clean_strings(string_series: pd.Series) -> pd.Series:
     :rtype: pd.Series
     """
     modified_string_series = string_series
+    modified_string_series.fillna('', inplace=True)
     # convert string to title case
     modified_string_series = modified_string_series.str.title()
     # remove non-alphanumeric
@@ -455,11 +457,12 @@ def fix_date(date_series: pd.Series, date_format: str) -> pd.Series:
     :return: modified dataframe
     :rtype: Series
     """
+    date_series.str.strip()
     formatted_date_series = pd.to_datetime(
         date_series,
         format=date_format,
-        infer_datetime_format=True,
         errors="coerce",
+        exact=False,
     ).dt.strftime("%Y-%m-%d")
 
     logging.debug(f"\nFixed dates:\n{date_series.head()}")

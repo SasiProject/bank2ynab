@@ -59,6 +59,6 @@ if __name__ == "__main__":
             f"\nFile processing complete! {files_processed} files processed.\n"
         )
 
-        if bank_transaction_dict:
-            api = YNAB_API(config_handler)
-            api.run(bank_transaction_dict)
+        #if bank_transaction_dict:
+        #    api = YNAB_API(config_handler)
+        #    api.run(bank_transaction_dict)
